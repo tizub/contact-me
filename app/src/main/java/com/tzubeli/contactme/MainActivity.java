@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity
             if (id == R.id.nav_home) {
                 newFragment = HomeFragment.newInstance();
             } else if (id == R.id.nav_profile) {
-                newFragment = MyProfileFragment.newInstance(null, null);
+                newFragment = MyProfileFragment.newInstance();
             }
             // In case this activity was started with special instructions from an
             // Intent, pass the Intent's extras to the fragment as arguments

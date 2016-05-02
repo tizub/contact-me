@@ -1,33 +1,26 @@
 package com.tzubeli.contactme;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 
 
 /**
  * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link MyProfileFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
  * Use the {@link MyProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class MyProfileFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String PREFS_NAME = "profile";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private OnFragmentInteractionListener mListener;
+    private SharedPreferences profilePrefs;
 
     public MyProfileFragment() {
         // Required empty public constructor
@@ -37,72 +30,42 @@ public class MyProfileFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment MyProfileFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static MyProfileFragment newInstance(String param1, String param2) {
+    public static MyProfileFragment newInstance() {
         MyProfileFragment fragment = new MyProfileFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_my_profile, container, false);
-    }
+        View v = inflater.inflate(R.layout.fragment_my_profile, container, false);
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
+        profilePrefs = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        final EditText inputFirstName = (EditText) v.findViewById(R.id.profile_first_name);
+        inputFirstName.setText(profilePrefs.getString("first_name", null));
+        final EditText inputLastName = (EditText) v.findViewById(R.id.profile_last_name);
+        inputLastName.setText(profilePrefs.getString("last_name", null));
+        final EditText inputPhoneMobile = (EditText) v.findViewById(R.id.profile_phone_mobile);
+        inputPhoneMobile.setText(profilePrefs.getString("phone_mobile", null));
 
-    /*@Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }*/
+        Button btnSaveProfile = (Button) v.findViewById(R.id.profile_save);
+        btnSaveProfile.setOnClickListener(new View.OnClickListener() {
+                                              @Override
+                                              public void onClick(View v) {
+                                                  SharedPreferences.Editor editor = profilePrefs.edit();
+                                                  editor.putString("first_name", inputFirstName.getText().toString());
+                                                  editor.putString("last_name", inputLastName.getText().toString());
+                                                  editor.putString("phone_mobile", inputPhoneMobile.getText().toString());
+                                                  editor.commit();
+                                              }
+                                          }
+        );
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        return v;
     }
 }
