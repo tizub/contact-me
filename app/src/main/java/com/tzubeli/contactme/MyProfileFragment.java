@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,6 +63,8 @@ public class MyProfileFragment extends Fragment {
                                                   editor.putString("last_name", inputLastName.getText().toString());
                                                   editor.putString("phone_mobile", inputPhoneMobile.getText().toString());
                                                   editor.commit();
+                                                  ((MainActivity)getActivity()).hideKeyboard(v);
+                                                  Snackbar.make(v, "Profile saved", Snackbar.LENGTH_LONG).show();
                                               }
                                           }
         );
