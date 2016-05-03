@@ -5,6 +5,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="navigation_menu_home">Home</string>
     <string name="navigation_menu_profile">My profile</string>
+    <string name="navigation_menu_contacts">My contacts</string>
 
     <string name="action_settings">Settings</string>
 

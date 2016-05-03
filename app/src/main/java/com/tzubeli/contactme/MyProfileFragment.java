@@ -65,7 +65,7 @@ public class MyProfileFragment extends Fragment {
 
         // Generating QRCode
         final Profile myProfile = new Profile(firstName, lastName, phoneMobile);
-        final Bitmap qrProfile = QRCodeSvc.getInstance().profileToImage(myProfile);
+        final Bitmap qrProfile = QRCodeSvc.profileToImage(myProfile);
         final ImageView qrCodeImageView = (ImageView) v.findViewById(R.id.profile_qr_code);
         qrCodeImageView.setImageBitmap(qrProfile);
         qrCodeImageView.setOnClickListener(new View.OnClickListener() {

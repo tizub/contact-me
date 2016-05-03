@@ -18,15 +18,20 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 import com.google.zxing.integration.android.IntentIntegrator;
-import com.tzubeli.contactme.services.QRCodeSvc;
+import com.tzubeli.contactme.beans.Profile;
+import com.tzubeli.contactme.services.ProfileSvc;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ContactsFragment.OnListFragmentInteractionListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final Activity mainActivity = this;
+
+        ProfileSvc.getInstance().init(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -35,11 +40,8 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 IntentIntegrator integrator = new IntentIntegrator(mainActivity);
-                //integrator.setBeepEnabled(true);
                 integrator.initiateScan();
-
             }
         });
 
@@ -108,12 +110,14 @@ public class MainActivity extends AppCompatActivity
                 newFragment = HomeFragment.newInstance();
             } else if (id == R.id.nav_profile) {
                 newFragment = MyProfileFragment.newInstance();
+            } else if (id == R.id.nav_contacts) {
+                newFragment = ContactsFragment.newInstance();
             }
             // In case this activity was started with special instructions from an
             // Intent, pass the Intent's extras to the fragment as arguments
             newFragment.setArguments(getIntent().getExtras());
             // Add the fragment to the 'fragment_container' FrameLayout
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).addToBackStack(null).commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -124,12 +128,25 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IntentIntegrator.REQUEST_CODE) {
-            QRCodeSvc.getInstance().readProfile(requestCode, resultCode, data);
+            ProfileSvc profileSvc = ProfileSvc.getInstance();
+            Profile scannedProfile = profileSvc.readProfile(requestCode, resultCode, data);
+            profileSvc.addContact(scannedProfile);
+            ArrayList<Profile> contacts = profileSvc.getContacts();
+            ContactDetailFragment contactFragment = ContactDetailFragment.newInstance(contacts.get(contacts.size()-1), profileSvc.getContacts().size()-1);
+            contactFragment.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, contactFragment).addToBackStack(null).commit();
         }
     }
 
     public void hideKeyboard(View v) {
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onContactListItemInteraction(Profile contact, int position) {
+        ContactDetailFragment contactFragment = ContactDetailFragment.newInstance(contact, position);
+        contactFragment.setArguments(getIntent().getExtras());
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, contactFragment).addToBackStack(null).commit();
     }
 }

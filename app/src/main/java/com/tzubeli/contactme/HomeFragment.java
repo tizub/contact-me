@@ -5,6 +5,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import com.tzubeli.contactme.services.ProfileSvc;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,6 +36,16 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View v = inflater.inflate(R.layout.fragment_home, container, false);
+
+        final Button mockGenView = (Button)v.findViewById(R.id.home_mocks_generate);
+        mockGenView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ProfileSvc.getInstance().generateMocks();
+            }
+        });
+
+        return v;
     }
 }
