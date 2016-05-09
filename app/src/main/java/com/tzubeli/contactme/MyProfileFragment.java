@@ -31,6 +31,7 @@ public class MyProfileFragment extends Fragment {
 
     private SharedPreferences profilePrefs;
     boolean isImageFitToScreen;
+    private int qrCodeWidth;
 
     public MyProfileFragment() {
         // Required empty public constructor
@@ -53,43 +54,32 @@ public class MyProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_my_profile, container, false);
+        final View mainView = inflater.inflate(R.layout.fragment_my_profile, container, false);
 
         profilePrefs = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        final EditText inputFirstName = (EditText) v.findViewById(R.id.profile_first_name);
+        final EditText inputFirstName = (EditText) mainView.findViewById(R.id.profile_first_name);
         String firstName = profilePrefs.getString("first_name", null);
-        final EditText inputLastName = (EditText) v.findViewById(R.id.profile_last_name);
+        final EditText inputLastName = (EditText) mainView.findViewById(R.id.profile_last_name);
         String lastName = profilePrefs.getString("last_name", null);
-        final EditText inputPhoneMobile = (EditText) v.findViewById(R.id.profile_phone_mobile);
+        final EditText inputPhoneMobile = (EditText) mainView.findViewById(R.id.profile_phone_mobile);
         String phoneMobile = profilePrefs.getString("phone_mobile", null);
 
         // Generating QRCode
         final Profile myProfile = new Profile(firstName, lastName, phoneMobile);
-        final Bitmap qrProfile = QRCodeSvc.profileToImage(myProfile);
-        final ImageView qrCodeImageView = (ImageView) v.findViewById(R.id.profile_qr_code);
-        qrCodeImageView.setImageBitmap(qrProfile);
-        qrCodeImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isImageFitToScreen) {
-                    isImageFitToScreen=false;
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
-                    qrCodeImageView.setLayoutParams(layoutParams);
-                    qrCodeImageView.setAdjustViewBounds(true);
-                }else{
-                    isImageFitToScreen=true;
-                    qrCodeImageView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-                    qrCodeImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                }
-            }
-        });
+        updateQRCode(mainView, myProfile);
+        // Init QRCode display
+        qrCodeWidth = (int) (getContext().getResources().getDisplayMetrics().density * 100 + 0.5f);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, qrCodeWidth);
+        layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+        ImageView qrCodeImageView = (ImageView) mainView.findViewById(R.id.profile_qr_code);
+        qrCodeImageView.setLayoutParams(layoutParams);
+        qrCodeImageView.setAdjustViewBounds(true);
 
         // Init view elements
         inputFirstName.setText(myProfile.getFirstName());
         inputLastName.setText(myProfile.getLastName());
         inputPhoneMobile.setText(myProfile.getPhoneMobile());
-        Button btnSaveProfile = (Button) v.findViewById(R.id.profile_save);
+        Button btnSaveProfile = (Button) mainView.findViewById(R.id.profile_save);
         btnSaveProfile.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View v) {
@@ -102,12 +92,33 @@ public class MyProfileFragment extends Fragment {
                   editor.putString("phone_mobile", myProfile.getPhoneMobile());
                   editor.commit();
                   ((MainActivity)getActivity()).hideKeyboard(v);
+                  updateQRCode(mainView, myProfile);
                   Snackbar.make(v, "Profile saved", Snackbar.LENGTH_LONG).show();
               }
         });
 
+        return mainView;
+    }
 
-
-        return v;
+    private void updateQRCode(View v, Profile myProfile) {
+        final Bitmap qrProfile = QRCodeSvc.profileToImage(myProfile);
+        final ImageView qrCodeImageView = (ImageView) v.findViewById(R.id.profile_qr_code);
+        qrCodeImageView.setImageBitmap(qrProfile);
+        qrCodeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity)getActivity()).hideKeyboard(v);
+                if(isImageFitToScreen) {
+                    isImageFitToScreen=false;
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, qrCodeWidth);
+                    layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+                    qrCodeImageView.setLayoutParams(layoutParams);
+                }else{
+                    isImageFitToScreen=true;
+                    qrCodeImageView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+                    qrCodeImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                }
+            }
+        });
     }
 }
